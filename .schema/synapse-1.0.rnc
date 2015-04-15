@@ -1,0 +1,154 @@
+namespace local = ""
+default namespace mal = "http://ws.apache.org/ns/synapse"
+start = sequence-element | template-element | api-element
+
+sequence-element = element sequence {
+  name-attribute?,
+  sequence-basic-childs
+}
+
+api-element = element api {
+  name-attribute,
+  attribute context {text},
+  element resource {
+    attribute methods {text},
+    attribute uri-template {text},
+    attribute protocol {text},
+    element inSequence {
+      sequence-basic-childs
+    },
+    element outSequence {
+      sequence-basic-childs
+    },
+    element faultSequence {
+      sequence-basic-childs
+    }
+  }+
+}
+
+sequence-basic-childs = 
+  (xslt-element |
+  payload_factory-element |
+  call_template-element |
+  property-element |
+  respond-element |
+  filter-element |
+  header-element |
+  call-element |
+  send-element |
+  filter-alternative-element |
+  switch-element |
+  sequence_reference-element|
+  log-element)*
+
+
+template-element = element template {
+  name-attribute,
+  parameter-element+,
+  sequence-element
+}
+
+parameter-element = element parameter {
+  name-attribute
+}
+
+sequence_reference-element = element sequence {
+  attribute key {text}
+}
+
+property-element = element property {
+  name-attribute,	
+  (attribute value {text} | attribute expression { text })?,
+  attribute type {text}?,	
+  attribute scope {text}?,
+  (attribute pattern {text},
+  attribute group {text})?,
+  attribute action {text}?
+}
+
+call-element = element call {
+ endpoint-element
+}
+
+send-element =  element send {
+  endpoint-element?
+}
+
+endpoint-element = element endpoint {
+  (attribute key-expression {text} |
+    attribute key {text})
+}
+
+header-element = element header {
+  name-attribute,
+  attribute scope {text},
+  (attribute value {text} | attribute expression { text })	
+}
+filter-alternative-element = element filter {
+  attribute source {text},
+  attribute regex {text},
+  sequence-basic-childs
+}
+
+filter-element = element filter {
+  attribute source {text},
+  attribute regex {text},
+  element then {
+    sequence-basic-childs
+  },
+  element else {
+    sequence-basic-childs
+  }
+}
+
+
+xslt-element = element xslt {
+  attribute key {text},
+  property-element*
+}
+
+payload_factory-element = element payloadFactory {
+  attribute media-type {text},
+  element format {any-element},
+  element args {
+    element arg {
+      attribute evaluator {text}?,
+      attribute expression {text}
+    }*
+  }
+}
+
+call_template-element = element call-template {
+  attribute target {text},
+  element with-param {
+    attribute name {text},
+    attribute value {text}
+  }*
+}
+
+respond-element = element respond {
+  text
+}
+
+switch-element = element switch {
+  attribute source {text},
+  element case {
+    sequence-basic-childs,
+    attribute regex { text }
+  }+,
+  element default { sequence-basic-childs }?
+}
+
+log-element = element log {
+  attribute level { text }?,
+  attribute category { text }?,
+  property-element*
+}
+name-attribute = attribute name {text}
+
+any-element = element * {
+  attribute * { text } *,
+  ( any-element * &
+    text ?
+  )
+}
